@@ -414,6 +414,8 @@ run_nvidia_installer() {
   local installer_args=(
     "--utility-prefix=${NVIDIA_INSTALL_DIR_CONTAINER}"
     "--opengl-prefix=${NVIDIA_INSTALL_DIR_CONTAINER}"
+    "--x-prefix=${NVIDIA_INSTALL_DIR_CONTAINER}"
+    "--install-libglvnd"
     "--no-install-compat32-libs"
     "--log-file-name=${NVIDIA_INSTALL_DIR_CONTAINER}/nvidia-installer.log"
     "--silent"
@@ -444,6 +446,9 @@ configure_cached_installation() {
   if ! lsmod | grep -q -w 'nvidia_drm'; then
     insmod "${NVIDIA_INSTALL_DIR_CONTAINER}/drivers/nvidia-drm.ko"
   fi
+  if ! lsmod | grep -q -w 'nvidia_modeset'; then
+    insmod "${NVIDIA_INSTALL_DIR_CONTAINER}/drivers/nvidia-modeset.ko"
+  fi
 }
 
 verify_nvidia_installation() {
@@ -451,7 +456,7 @@ verify_nvidia_installation() {
   export PATH="${NVIDIA_INSTALL_DIR_CONTAINER}/bin:${PATH}"
   nvidia-smi
   # Create unified memory device file.
-  nvidia-modprobe -c0 -u
+  nvidia-modprobe -c0 -u -m
 
   # TODO: Add support for enabling persistence mode.
 }
